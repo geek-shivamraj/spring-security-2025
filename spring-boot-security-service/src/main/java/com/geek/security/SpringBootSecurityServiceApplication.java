@@ -6,6 +6,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 /**
  *  If Spring Security is on the classpath,
  *  Spring Boot automatically secures all HTTP endpoints with “basic” authentication. However, you can further customize the security settings.
+ *
+ *  Spring Security - 6.5.1
  */
 @SpringBootApplication
 public class SpringBootSecurityServiceApplication {
