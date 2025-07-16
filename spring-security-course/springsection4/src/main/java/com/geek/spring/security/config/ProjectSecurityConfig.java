@@ -4,12 +4,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.password.CompromisedPasswordChecker;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.password.HaveIBeenPwnedRestApiPasswordChecker;
 
@@ -18,25 +14,23 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @Configuration
 public class ProjectSecurityConfig {
 
+    /**
+     * The below method is used to create a SecurityFilterChain bean which is used to configure web based security for the application.
+     * The HttpSecurity object is used to configure the security filter chain.
+     * The authorizeHttpRequests method is used to configure the authorization of HTTP requests.
+     * The requestMatchers method is used to specify the requests that are used to configure the authorization.
+     * The authenticated method is used to specify that the requests require authentication.
+     * The permitAll method is used to specify that all requests are permitted.
+     */
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
-        http.authorizeHttpRequests(requests -> requests
+        http.csrf(csrfConfigurer -> csrfConfigurer.disable())
+                .authorizeHttpRequests(requests -> requests
                         .requestMatchers("/myAccount", "/myBalance", "/myLoans", "/myCards").authenticated()
-                        .requestMatchers("/notices", "/contact", "/error").permitAll())
+                        .requestMatchers("/notices", "/contact", "/error", "/register").permitAll())
                 .formLogin(withDefaults())
                 .httpBasic(withDefaults());
         return http.build();
-    }
-
-    @Bean
-    public UserDetailsService userDetailsService() {
-        // if we use {noop}, then password will be stored in plain text
-        UserDetails user = User.withUsername("user").password("{noop}EazyBytes@12345").authorities("read").build();
-        //UserDetails admin = User.withUsername("admin").password("{noop}54321").authorities("read").build();
-        UserDetails admin = User.withUsername("admin")
-                .password("{bcrypt}$2a$12$Ss51x8R4gkaTNaXLKF2OAOGsauxl5Xfn8cKqOXO1ZQxHxPXgmVN1W")
-                .authorities("read").build();
-        return new InMemoryUserDetailsManager(user, admin);
     }
 
     /**
