@@ -13,18 +13,26 @@ import org.springframework.security.web.authentication.password.HaveIBeenPwnedRe
 import static org.springframework.security.config.Customizer.withDefaults;
 
 /**
- * we use the @Profile annotation to specify that this component/bean should only be activated in the non-prod profile.
- *
- * In lower level environment, we want to permit all the requests.
+ * we use the @Profile annotation to specify that this component/bean should only be activated in the "prod" profile.
  */
 @Configuration
-@Profile("!prod")
-public class ProjectSecurityConfig {
+@Profile("prod")
+public class ProjectSecurityProdConfig {
 
+    /**
+     * The below method is used to create a SecurityFilterChain bean which is used to configure web based security for the application.
+     * The HttpSecurity object is used to configure the security filter chain.
+     * The authorizeHttpRequests method is used to configure the authorization of HTTP requests.
+     * The requestMatchers method is used to specify the requests that are used to configure the authorization.
+     * The authenticated method is used to specify that the requests require authentication.
+     * The permitAll method is used to specify that all requests are permitted.
+     */
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrfConfigurer -> csrfConfigurer.disable())
-                .authorizeHttpRequests(requests -> requests.anyRequest().permitAll())
+                .authorizeHttpRequests(requests -> requests
+                        .requestMatchers("/myAccount", "/myBalance", "/myLoans", "/myCards").authenticated()
+                        .requestMatchers("/notices", "/contact", "/error", "/register").permitAll())
                 .formLogin(withDefaults())
                 .httpBasic(withDefaults());
         return http.build();
