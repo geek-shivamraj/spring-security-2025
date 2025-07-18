@@ -1,0 +1,14 @@
+Encryption algorithm: AES 256
+Secret key: 12345
+pbkdf2 (Password based key derived function 2)
+- makes encryption more stronger (it is going to add a random salt to derive another secret key)
+base64 - to convert the encrypted data to readable format
+
+Command to encrypt
+1. openssl enc -aes-256-cbc -pass pass:12345 -pbkdf2 -in plainText.txt -out encrypt.txt
+2. openssl enc -aes-256-cbc -pass pass:12345 -pbkdf2 -in plainText.txt -out encrypt.txt -base64
+
+Command to decrypt
+1. openssl enc -aes-256-cbc -pass pass:12345 -d -pbkdf2 -in encryptNonReadable.txt -out decryptNonReadable.txt
+2. openssl enc -aes-256-cbc -base64 -pass pass:12345 -d -pbkdf2 -in encrypt.txt -out decrypt.txt
+

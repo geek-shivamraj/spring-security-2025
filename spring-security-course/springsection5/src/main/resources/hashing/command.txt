@@ -1,0 +1,5 @@
+openssl dgst -sha256 anyfile.extension
+
+echo -n "EazyBytes@12345" | openssl dgst -sha256
+
+
