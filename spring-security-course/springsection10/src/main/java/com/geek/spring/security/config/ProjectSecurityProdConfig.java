@@ -2,7 +2,10 @@ package com.geek.spring.security.config;
 
 import com.geek.spring.security.exceptionhandling.CustomAccessDeniedHandler;
 import com.geek.spring.security.exceptionhandling.CustomBasicAuthenticationEntryPoint;
+import com.geek.spring.security.filter.AuthoritiesLoggingAfterFilter;
+import com.geek.spring.security.filter.AuthoritiesLoggingAtFilter;
 import com.geek.spring.security.filter.CsrfCookieFilter;
+import com.geek.spring.security.filter.RequestValidationBeforeFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -39,6 +42,9 @@ public class ProjectSecurityProdConfig {
                         .csrfTokenRequestHandler(csrfTokenRequestAttribute)
                         .ignoringRequestMatchers("/contact", "/register"))
                 .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
+                .addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class)
+                .addFilterAfter(new AuthoritiesLoggingAfterFilter(), BasicAuthenticationFilter.class)
+                .addFilterAt(new AuthoritiesLoggingAtFilter(), BasicAuthenticationFilter.class)
                 .cors(corsConfig -> corsConfig.configurationSource(request -> {
                     CorsConfiguration config = new CorsConfiguration();
                     config.setAllowedOrigins(Collections.singletonList("https://localhost:4200"));
