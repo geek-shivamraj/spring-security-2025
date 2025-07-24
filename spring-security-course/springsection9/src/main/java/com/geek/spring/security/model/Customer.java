@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.sql.Date;
+import java.util.Set;
 
 @Entity
 @Getter @Setter
@@ -35,5 +36,15 @@ public class Customer {
     @Column(name = "create_dt")
     @JsonIgnore
     private Date createDt;
+
+    /**
+     * To store all the authorities/roles of the Customer
+     * OneToMany - One Customer can have multiple authorities
+     * mappedBy - foreign key in Authority table
+     * fetch - EAGER means to fetch all the authorities while loading the parent records i.e., Customer
+     */
+    @OneToMany(mappedBy = "customer", fetch = FetchType.EAGER)
+    @JsonIgnore
+    private Set<Authority> authorities;
 
 }
