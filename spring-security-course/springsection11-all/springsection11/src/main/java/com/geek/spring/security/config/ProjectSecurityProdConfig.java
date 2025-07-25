@@ -2,10 +2,7 @@ package com.geek.spring.security.config;
 
 import com.geek.spring.security.exceptionhandling.CustomAccessDeniedHandler;
 import com.geek.spring.security.exceptionhandling.CustomBasicAuthenticationEntryPoint;
-import com.geek.spring.security.filter.AuthoritiesLoggingAfterFilter;
-import com.geek.spring.security.filter.AuthoritiesLoggingAtFilter;
-import com.geek.spring.security.filter.CsrfCookieFilter;
-import com.geek.spring.security.filter.RequestValidationBeforeFilter;
+import com.geek.spring.security.filter.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -24,6 +21,7 @@ import org.springframework.security.web.util.matcher.AnyRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 
 import java.util.Collections;
+import java.util.List;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
@@ -34,9 +32,8 @@ public class ProjectSecurityProdConfig {
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         CsrfTokenRequestAttributeHandler csrfTokenRequestAttribute = new CsrfTokenRequestAttributeHandler();
-        http.securityContext(contextConfig -> contextConfig.requireExplicitSave(false))
-                .sessionManagement(sessionConfig -> sessionConfig
-                        .sessionCreationPolicy(SessionCreationPolicy.ALWAYS))
+        http.sessionManagement(sessionConfig -> sessionConfig
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .csrf(csrfConfig -> csrfConfig
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                         .csrfTokenRequestHandler(csrfTokenRequestAttribute)
@@ -45,12 +42,15 @@ public class ProjectSecurityProdConfig {
                 .addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class)
                 .addFilterAfter(new AuthoritiesLoggingAfterFilter(), BasicAuthenticationFilter.class)
                 .addFilterAt(new AuthoritiesLoggingAtFilter(), BasicAuthenticationFilter.class)
+                .addFilterAfter(new JWTTokenGeneratorFilter(), BasicAuthenticationFilter.class)
+                .addFilterBefore(new JWTTokenValidationFilter(), BasicAuthenticationFilter.class)
                 .cors(corsConfig -> corsConfig.configurationSource(request -> {
                     CorsConfiguration config = new CorsConfiguration();
                     config.setAllowedOrigins(Collections.singletonList("https://localhost:4200"));
                     config.setAllowedMethods(Collections.singletonList("*"));
                     config.setAllowCredentials(true);
                     config.setAllowedHeaders(Collections.singletonList("*"));
+                    config.setExposedHeaders(List.of("Authorization"));
                     config.setMaxAge(3600L);
                     return config;
                 }))

@@ -2,10 +2,7 @@ package com.geek.spring.security.config;
 
 import com.geek.spring.security.exceptionhandling.CustomAccessDeniedHandler;
 import com.geek.spring.security.exceptionhandling.CustomBasicAuthenticationEntryPoint;
-import com.geek.spring.security.filter.AuthoritiesLoggingAfterFilter;
-import com.geek.spring.security.filter.AuthoritiesLoggingAtFilter;
-import com.geek.spring.security.filter.CsrfCookieFilter;
-import com.geek.spring.security.filter.RequestValidationBeforeFilter;
+import com.geek.spring.security.filter.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -22,6 +19,7 @@ import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.cors.CorsConfiguration;
 
 import java.util.Collections;
+import java.util.List;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
@@ -29,12 +27,19 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @Profile("!prod")
 public class ProjectSecurityConfig {
 
+    /**
+     *
+     * Since we want to use JWT advanced token format, we need to stop Spring Security default behavior of JSESSIONID creation.
+     * To communicate to Spring Security to not generate JSESSIONID, we need to use the sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+     * No where this JWT token will be stored in session. It will be sent back to UI. Hence, Remove contextConfig.requireExplicitSave(false)
+     *
+     * In CORS, we need to expose the header to the client (deployed at different origin) as JWT token would be sent in the header
+     */
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         CsrfTokenRequestAttributeHandler csrfTokenRequestAttribute = new CsrfTokenRequestAttributeHandler();
-        http.securityContext(contextConfig -> contextConfig.requireExplicitSave(false))
-                .sessionManagement(sessionConfig -> sessionConfig
-                        .sessionCreationPolicy(SessionCreationPolicy.ALWAYS))
+        http.sessionManagement(sessionConfig -> sessionConfig
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .csrf(csrfConfig -> csrfConfig
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                         .csrfTokenRequestHandler(csrfTokenRequestAttribute)
@@ -43,12 +48,15 @@ public class ProjectSecurityConfig {
                 .addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class)
                 .addFilterAfter(new AuthoritiesLoggingAfterFilter(), BasicAuthenticationFilter.class)
                 .addFilterAt(new AuthoritiesLoggingAtFilter(), BasicAuthenticationFilter.class)
+                .addFilterAfter(new JWTTokenGeneratorFilter(), BasicAuthenticationFilter.class)
+                .addFilterBefore(new JWTTokenValidationFilter(), BasicAuthenticationFilter.class)
                 .cors(corsConfig -> corsConfig.configurationSource(request -> {
                     CorsConfiguration config = new CorsConfiguration();
                     config.setAllowedOrigins(Collections.singletonList("http://localhost:4200"));
                     config.setAllowedMethods(Collections.singletonList("*"));
                     config.setAllowCredentials(true);
                     config.setAllowedHeaders(Collections.singletonList("*"));
+                    config.setExposedHeaders(List.of("Authorization"));
                     config.setMaxAge(3600L);
                     return config;
                 }))
