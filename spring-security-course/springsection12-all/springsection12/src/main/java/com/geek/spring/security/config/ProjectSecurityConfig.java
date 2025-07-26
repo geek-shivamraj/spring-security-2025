@@ -66,7 +66,7 @@ public class ProjectSecurityConfig {
                 .authorizeHttpRequests(requests -> requests
                         .requestMatchers("/myAccount").hasRole("USER")
                         .requestMatchers("/myBalance").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers("/myLoans").hasRole("USER")
+                        .requestMatchers("/myLoans").authenticated() // For Method level Security Check Demo
                         .requestMatchers("/myCards").hasRole("USER")
                         .requestMatchers("/user").authenticated()
                         .requestMatchers("/notices", "/contact", "/error", "/register", "/invalidSession", "/apiLogin").permitAll());

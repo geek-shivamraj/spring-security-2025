@@ -3,11 +3,14 @@ package com.geek.spring.security.controller;
 import com.geek.spring.security.model.Contact;
 import com.geek.spring.security.repository.ContactRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PostFilter;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.sql.Date;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 @RestController
@@ -16,11 +19,22 @@ public class ContactController {
 
     private final ContactRepository contactRepository;
 
+    /**
+     * Imp Note: To use @PreFilter, we need to make sure we're passing the Collection type as argument.
+     */
     @PostMapping("/contact")
-    public Contact saveContactInquiryDetails(@RequestBody Contact contact) {
-        contact.setContactId(getServiceReqNumber());
-        contact.setCreateDt(new Date(System.currentTimeMillis()));
-        return contactRepository.save(contact);
+    //@PreFilter("filterObject.contactName != 'Test'")
+    @PostFilter("filterObject.contactName != 'Test'")
+    public List<Contact> saveContactInquiryDetails(@RequestBody List<Contact> contacts) {
+        List<Contact> returnContacts = new ArrayList<>();
+        if(!contacts.isEmpty()) {
+            Contact contact = contacts.getFirst();
+            contact.setContactId(getServiceReqNumber());
+            contact.setCreateDt(new Date(System.currentTimeMillis()));
+            Contact savedContact = contactRepository.save(contact);
+            returnContacts.add(savedContact);
+        }
+        return returnContacts;
     }
 
     public String getServiceReqNumber() {
