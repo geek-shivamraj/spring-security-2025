@@ -22,6 +22,16 @@ public class ProjectSecurityConfig {
         return httpSecurity.build();
     }
 
+    /**
+     * Instead of using the in-memory registration repository, we can also use the application.properties configurations
+     *
+     *  spring.security.oauth2.client.registration.github.client-id=${GITHUB_CLIENT_ID:Ov23liGyLBlm1TcK3z4W}
+     *  spring.security.oauth2.client.registration.github.client-secret=${GITHUB_CLIENT_SECRET:d0dd3013ae0e4bdbc09fc48d5f1e518ede400ce2}
+     *
+     *  spring.security.oauth2.client.registration.facebook.client-id=${FACEBOOK_CLIENT_ID:974042741122392}
+     *  spring.security.oauth2.client.registration.facebook.client-secret=${FACEBOOK_CLIENT_SECRET:36d48c25c1767d58b3101551513d7e1e}
+     *
+     */
     @Bean
     ClientRegistrationRepository clientRegistrationRepository() {
         return new InMemoryClientRegistrationRepository(githubClientRegistration(), facebookClientRegistration());
