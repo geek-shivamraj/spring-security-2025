@@ -2,6 +2,7 @@ package com.geek.spring.security.config;
 
 import com.geek.spring.security.exceptionhandling.CustomAccessDeniedHandler;
 import com.geek.spring.security.filter.CsrfCookieFilter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -20,6 +21,15 @@ import java.util.List;
 @Configuration
 @Profile("!prod")
 public class ProjectSecurityConfig {
+
+    @Value("${spring.security.oauth2.resourceserver.opaque.introspection-uri}")
+    String introspectionUri;
+
+    @Value("${spring.security.oauth2.resourceserver.opaque.introspection-client-id}")
+    String clientId;
+
+    @Value("${spring.security.oauth2.resourceserver.opaque.introspection-client-secret}")
+    String clientSecret;
 
     /**
      *
@@ -61,6 +71,10 @@ public class ProjectSecurityConfig {
 
         http.oauth2ResourceServer(rsc -> rsc.jwt(jwtConfigurer ->
                 jwtConfigurer.jwtAuthenticationConverter(jwtAuthenticationConverter)));
+//        http.oauth2ResourceServer(rsc -> rsc.opaqueToken(opc ->
+//                opc.authenticationConverter(new KeycloakOpaqueRoleConverter())
+//                        .introspectionUri(introspectionUri)
+//                        .introspectionClientCredentials(clientId, clientSecret)));
         http.exceptionHandling(ehc -> ehc.accessDeniedHandler(new CustomAccessDeniedHandler()));
 
         return http.build();
